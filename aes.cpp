@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
-#include <random>
+
 
 class AES {
 public:
@@ -17,8 +17,7 @@ public:
     static constexpr int Nk = 8;
     static constexpr int Nr = 14;
 
-    explicit AES() {
-        std::vector<uint8_t> key=generate_key();
+    explicit AES(const std::vector<uint8_t>& key) {
         if (key.size() != KeySize) {
             throw std::invalid_argument("AES-256 requires a 32-byte key.");
         }
@@ -53,7 +52,7 @@ public:
 
 private:
     std::array<uint8_t, 240> roundKey{};
-    std::vector<uint8_t> generate_key();
+    
     // Internal AES transformations
     void cipher(uint8_t* state);
     void invCipher(uint8_t* state);
@@ -136,12 +135,7 @@ uint8_t AES::mul(uint8_t a, uint8_t b) {
     }
     return r;
 }
-std::vector<uint8_t> AES::generate_key(){
-    std::vector<uint8_t> key(32);
-    std::random_device rd; 
-    std::generate(key.begin(), key.end(), std::ref(rd));
-    return key;
-}
+
 void AES::keyExpansion(const uint8_t* key) {
     std::copy(key, key + KeySize, roundKey.begin());
     uint8_t temp[4];
@@ -246,9 +240,15 @@ std::vector<uint8_t> AES::pkcs7Unpad(const std::vector<uint8_t>& data) {
     return {data.begin(), data.end() - padLen};
 }
 
+// Example main function (commented out - uncomment to test)
+/*
 int main() {
     try { 
-        AES aes;
+        // Generate a 32-byte key for AES-256
+        std::vector<uint8_t> key(32);
+        for (int i = 0; i < 32; i++) key[i] = i;
+        
+        AES aes(key);
 
         std::string plain = "Hello, C++ World!";
         std::vector<uint8_t> data(plain.begin(), plain.end());
@@ -265,3 +265,4 @@ int main() {
     }
     return 0;
 }
+*/
