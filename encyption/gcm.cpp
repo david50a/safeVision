@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <random>
-#include "aes.cpp"
+#include "aes.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -42,7 +42,7 @@ private:
 public:
     GCM();
     ~GCM();
-    void setKey(const std::vector<uint8_t>& key);
+    void setKey();
     // Wrapped for Python: Returns a pair of (ciphertext, tag)
     std::pair<py::bytes, py::bytes> encrypt_py(py::bytes iv, py::bytes plaintext, py::bytes aad) {
         std::string s_iv = iv;
@@ -164,8 +164,9 @@ GCM::GCM() : aes(nullptr) {}
 GCM::~GCM() {
     if (aes)delete aes;
 }
-void GCM::setKey(const std::vector<uint8_t>& key) {
+void GCM::setKey() {
     if (aes) delete aes;
+    std::vector<uint8_t> key = generate_key();
     aes = new AES(key);
 }
 

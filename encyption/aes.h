@@ -44,8 +44,7 @@ public:
     static std::string toHex(const std::vector<uint8_t>& data);
 
 private:
-    std::array<std::array<uint32_t, 60>, 1> roundKeys;
-
+    void addRoundKey(uint8_t* state, int round);
     void keyExpansion(const uint8_t* key);
     void cipher(uint8_t* state);
     void invCipher(uint8_t* state);
