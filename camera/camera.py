@@ -3,7 +3,7 @@ import socket
 import config
 from protocol import send_packet
 from utils import FPSLimiter
-import encyption.
+
 client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 client.connect((config.IP,config.PORT))
 print('[INFO] Connected to server')

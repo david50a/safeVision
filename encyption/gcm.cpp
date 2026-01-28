@@ -88,6 +88,10 @@ public:
                  unsigned char* plaintext);
 
     static std::vector<uint8_t> generate_key();
+    void setKey(const std::vector<unsigned char>& key) {
+        if (aes) delete aes;
+        aes = new AES(key);
+    }
 };
 
 vector<uint8_t> GCM::mul(const vector<uint8_t>& X_bytes, const vector<uint8_t>& Y_bytes) {
@@ -192,7 +196,6 @@ void GCM::encrypt(const unsigned char* iv, const size_t ivlen,
         iv_vec = pad(iv_vec);
         std::vector<uint8_t> len_block(16, 0);
         uint64_t iv_bits_len = ivlen * 8;
-        // FIX: Corrected bit shifting for IV length encoding
         for (int i = 0; i < 8; ++i) {
             len_block[8 + i] = (iv_bits_len >> (56 - 8 * i)) & 0xff;
         }
@@ -281,7 +284,10 @@ PYBIND11_MODULE(gcm_lib, m) {
     m.doc() = "GCM AES-256 Encryption Module";
     py::class_<GCM>(m, "GCM")
         .def(py::init<>())
-        .def("setKey", &GCM::setKey)
+        // For the version: void setKey()
+        .def("setKey", static_cast<void (GCM::*)()>(&GCM::setKey))
+        // For the version: void setKey(const std::vector<uint8_t>&)
+        .def("setKey", static_cast<void (GCM::*)(const std::vector<uint8_t>&)>(&GCM::setKey), "key"_a)
         .def("encrypt", &GCM::encrypt_py, "iv"_a, "plaintext"_a, "aad"_a)
         .def("decrypt", &GCM::decrypt_py, "iv"_a, "ciphertext"_a, "aad"_a, "tag"_a)
         .def_static("generate_key", &GCM::generate_key);
