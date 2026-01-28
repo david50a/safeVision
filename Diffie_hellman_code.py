@@ -1,7 +1,8 @@
 import hashlib
 import secrets
-import os
+import socket
 from typing import Tuple,Dict,Optional
+import gcm_lib
 class DiffieHellmanKeyExchange:
     P = int(
         "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"
@@ -25,7 +26,7 @@ class DiffieHellmanKeyExchange:
     def get_public_key(self)->bytes:
         return self.public_key.to_bytes(256,'big')
 
-    def generate_shared_secret(self, peer_public_key:bytes)->bytes:
+    def compute_shared_secret(self, peer_public_key:bytes)->bytes:
         peer_public_key=int.from_bytes(peer_public_key,'big')
         if peer_public_key<2 or peer_public_key>=self.P:
             raise ValueError("Invalid peer public key")
@@ -38,3 +39,25 @@ class DiffieHellmanKeyExchange:
             raise ValueError("Shared secret not generated")
         return self.shared_secret
 
+class SecureVideoStreamWithDH:
+    AAD_PREFIX = b"safeVision_"+str(secrets.randbelow(100001)).encode('utf-8')
+    def __init__(self):
+        self.gcm=None
+        self.hd=DiffieHellmanKeyExchange()
+        self.is_key_established=False
+        self.frame_count = secrets.randbelow(100001)
+
+    def _initialize_gcm(self, shared_secret:bytes):
+        self.shared_key=shared_secret
+        self.gcm=gcm_lib.GCM()
+        self.gcm.setKey()
+
+    @staticmethod
+    def _recv_exactly(self,sock:socket.socket,n:int)->bytes:
+        data=b''
+        while len(data)<n:
+            packet=sock.recv(n-len(data))
+            if not packet:
+                raise RuntimeError("Socket connection broken")
+            data+=packet
+        return data

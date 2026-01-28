@@ -3,7 +3,7 @@ import socket
 import config
 from protocol import send_packet
 from utils import FPSLimiter
-
+from datetime import datetime
 client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 client.connect((config.IP,config.PORT))
 print('[INFO] Connected to server')
@@ -25,7 +25,8 @@ while True:
         "location": config.LOCATION,
         'resolution': f'{config.FRAME_WIDTH}x{config.FRAME_HEIGHT}',
         'fps':config.FPS,
-        'frame_size': len(data)
+        'frame_size': len(data),
+        'file_name': f'image_{datetime.now().strftime("%Y%m%d_%H%M%S")}.jpg'
     }
     send_packet(client,metadata,data)
     if config.DEBUG:
