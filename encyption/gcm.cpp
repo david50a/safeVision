@@ -15,6 +15,7 @@
 
 using namespace std;
 namespace py = pybind11;
+using namespace pybind11::literals;  // FIX: Added for _a suffix
 
 class GCM {
 private:
@@ -88,8 +89,8 @@ public:
 
     static std::vector<uint8_t> generate_key();
 };
-vector<uint8_t> GCM::mul(const vector<uint8_t>& X_bytes, const vector<uint8_t>& Y_bytes) {
 
+vector<uint8_t> GCM::mul(const vector<uint8_t>& X_bytes, const vector<uint8_t>& Y_bytes) {
     std::vector<uint8_t> x_bits;
     x_bits.reserve(128);
     for (uint8_t b : X_bytes) {
@@ -111,12 +112,11 @@ vector<uint8_t> GCM::mul(const vector<uint8_t>& X_bytes, const vector<uint8_t>& 
             for (size_t j = 0; j < 128; ++j) {
                 z_bits[j] ^= v_bits[j];
             }
-
         }
         uint8_t lsb = v_bits[127];
         for (int j = 127; j > 0; --j) v_bits[j] = v_bits[j - 1];
         v_bits[0] = 0;
-        if (lsb) for (size_t j = 0; j < 128; ++j)v_bits[j] ^= R_bits[j];
+        if (lsb) for (size_t j = 0; j < 128; ++j) v_bits[j] ^= R_bits[j];
     }
     std::vector<uint8_t> Z_bytes(16, 0);
     for (int i = 0; i < 16; ++i) {
@@ -124,6 +124,7 @@ vector<uint8_t> GCM::mul(const vector<uint8_t>& X_bytes, const vector<uint8_t>& 
     }
     return Z_bytes;
 }
+
 vector<uint8_t> GCM::ghash(const vector<uint8_t>& H, const vector<uint8_t>& A) {
     vector<uint8_t> Y(16, 0);
     size_t n = A.size() / 16;
@@ -146,6 +147,7 @@ vector<uint8_t> GCM::inc32(const vector<uint8_t>& counter) {
     }
     return result;
 }
+
 vector<uint8_t> GCM::gctr(const vector<uint8_t>& icb, const vector<uint8_t>& data) {
     if (data.empty()) return {};
     int n = ceil((double)data.size() / 16.0);
@@ -160,10 +162,13 @@ vector<uint8_t> GCM::gctr(const vector<uint8_t>& icb, const vector<uint8_t>& dat
     }
     return result;
 }
+
 GCM::GCM() : aes(nullptr) {}
+
 GCM::~GCM() {
-    if (aes)delete aes;
+    if (aes) delete aes;
 }
+
 void GCM::setKey() {
     if (aes) delete aes;
     std::vector<uint8_t> key = generate_key();
@@ -187,8 +192,9 @@ void GCM::encrypt(const unsigned char* iv, const size_t ivlen,
         iv_vec = pad(iv_vec);
         std::vector<uint8_t> len_block(16, 0);
         uint64_t iv_bits_len = ivlen * 8;
-        for (int i = 8; i < 16; ++i) {
-            len_block[i] = (iv_bits_len >> (120 - 8 * (i - 8))) & 0xff;
+        // FIX: Corrected bit shifting for IV length encoding
+        for (int i = 0; i < 8; ++i) {
+            len_block[8 + i] = (iv_bits_len >> (56 - 8 * i)) & 0xff;
         }
         iv_vec.insert(iv_vec.end(), len_block.begin(), len_block.end());
         J0 = ghash(H, iv_vec);
@@ -231,7 +237,10 @@ void GCM::decrypt(const unsigned char* iv, const size_t ivlen,
         iv_vec = pad(iv_vec);
         std::vector<uint8_t> len_block(16, 0);
         uint64_t iv_bits_len = ivlen * 8;
-        for (int i = 8; i < 16; ++i) len_block[i] = (iv_bits_len >> (120 - 8 * (i - 8))) & 0xff;
+        // FIX: Corrected bit shifting for IV length encoding
+        for (int i = 0; i < 8; ++i) {
+            len_block[8 + i] = (iv_bits_len >> (56 - 8 * i)) & 0xff;
+        }
         iv_vec.insert(iv_vec.end(), len_block.begin(), len_block.end());
         J0 = ghash(H, iv_vec);
     }
@@ -256,14 +265,18 @@ void GCM::decrypt(const unsigned char* iv, const size_t ivlen,
     std::vector<uint8_t> plaintext_vec = gctr(inc32(J0), cipher_vec);
     std::copy(plaintext_vec.begin(), plaintext_vec.end(), plaintext);
 }
+
 std::vector<uint8_t> GCM::generate_key() {
     std::vector<uint8_t> key(32);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 255);
-    for (int i = 0; i < 32; i++) {key[i] = dis(gen);}
+    for (int i = 0; i < 32; i++) {
+        key[i] = dis(gen);
+    }
     return key;
 }
+
 PYBIND11_MODULE(gcm_lib, m) {
     m.doc() = "GCM AES-256 Encryption Module";
     py::class_<GCM>(m, "GCM")

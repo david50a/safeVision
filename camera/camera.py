@@ -1,7 +1,6 @@
 import cv2
 import socket
 import config
-import struct
 from protocol import send_packet
 from utils import FPSLimiter
 
@@ -17,13 +16,23 @@ while True:
         break
     frame=cv2.resize(frame,(config.FRAME_WIDTH,config.FRAME_HEIGHT))
     encode_params=[int(cv2.IMWRITE_JPEG_QUALITY),config.JPEG_QUALITY]
-    cv2.imshow('Camera', frame)
-    _, buffer = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
-    data = buffer.tobytes()
-    client.sendall(struct.pack("!I", len(data)))
-    client.sendall(data)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    success,encoded = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+    if not success:
+        continue
+    data=encoded.tobytes()
+    metadata = {
+        "camera_id": config.CAMERA_ID,
+        "location": config.LOCATION,
+        'resolution': f'{config.FRAME_WIDTH}x{config.FRAME_HEIGHT}',
+        'fps':config.FPS,
+        'frame_size': len(data)
+    }
+    send_packet(client,metadata,data)
+    if config.DEBUG:
+        cv2.imshow("Frame", frame)
+        if cv2.waitKey(1)& 0xFF==ord('q'):
+            break
+    limiter.wait()
 camera.release()
 cv2.destroyAllWindows()
 client.close()

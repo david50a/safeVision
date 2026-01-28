@@ -1,3 +1,6 @@
+#ifndef AES_H
+#define AES_H
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -25,6 +28,11 @@ public:
     }
 
     std::vector<uint8_t> encrypt(const std::vector<uint8_t>& data) {
+        // FIX: Check if data is empty to avoid issues
+        if (data.empty()) {
+            return pkcs7Pad(data);  // Return padded empty vector
+        }
+        
         std::vector<uint8_t> state = pkcs7Pad(data);
         for (size_t i = 0; i < state.size(); i += BlockSize) {
             cipher(state.data() + i);
@@ -181,8 +189,13 @@ void AES::invCipher(uint8_t* state) {
     addRoundKey(state, 0);
 }
 
-void AES::subBytes(uint8_t* s) { for (int i = 0; i < 16; i++) s[i] = Sbox[s[i]]; }
-void AES::invSubBytes(uint8_t* s) { for (int i = 0; i < 16; i++) s[i] = InvSbox[s[i]]; }
+void AES::subBytes(uint8_t* s) { 
+    for (int i = 0; i < 16; i++) s[i] = Sbox[s[i]]; 
+}
+
+void AES::invSubBytes(uint8_t* s) { 
+    for (int i = 0; i < 16; i++) s[i] = InvSbox[s[i]]; 
+}
 
 void AES::addRoundKey(uint8_t* state, int round) {
     for (int i = 0; i < 16; i++) state[i] ^= roundKey[round * 16 + i];
@@ -236,9 +249,20 @@ std::vector<uint8_t> AES::pkcs7Pad(const std::vector<uint8_t>& data) {
 std::vector<uint8_t> AES::pkcs7Unpad(const std::vector<uint8_t>& data) {
     if (data.empty()) return {};
     uint8_t padLen = data.back();
-    if (padLen == 0 || padLen > BlockSize) throw std::runtime_error("Invalid padding");
+    // FIX: More robust padding validation
+    if (padLen == 0 || padLen > BlockSize || padLen > data.size()) {
+        throw std::runtime_error("Invalid padding");
+    }
+    // FIX: Verify all padding bytes are correct
+    for (size_t i = data.size() - padLen; i < data.size(); ++i) {
+        if (data[i] != padLen) {
+            throw std::runtime_error("Invalid padding");
+        }
+    }
     return {data.begin(), data.end() - padLen};
 }
+
+#endif // AES_H
 
 // Example main function (commented out - uncomment to test)
 /*
