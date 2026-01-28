@@ -1,94 +1,6 @@
-#ifndef AES_H
-#define AES_H
+#include "aes.h"
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <array>
-#include <algorithm>
-#include <iomanip>
-#include <sstream>
-#include <stdexcept>
-
-
-class AES {
-public:
-    // AES-256 Constants
-    static constexpr size_t BlockSize = 16;
-    static constexpr size_t KeySize   = 32;
-    static constexpr int Nb = 4;
-    static constexpr int Nk = 8;
-    static constexpr int Nr = 14;
-
-    explicit AES(const std::vector<uint8_t>& key) {
-        if (key.size() != KeySize) {
-            throw std::invalid_argument("AES-256 requires a 32-byte key.");
-        }
-        keyExpansion(key.data());
-    }
-
-    std::vector<uint8_t> encrypt(const std::vector<uint8_t>& data) {
-        // FIX: Check if data is empty to avoid issues
-        if (data.empty()) {
-            return pkcs7Pad(data);  // Return padded empty vector
-        }
-        
-        std::vector<uint8_t> state = pkcs7Pad(data);
-        for (size_t i = 0; i < state.size(); i += BlockSize) {
-            cipher(state.data() + i);
-        }
-        return state;
-    }
-
-    std::vector<uint8_t> decrypt(const std::vector<uint8_t>& data) {
-        if (data.empty() || data.size() % BlockSize != 0) {
-            throw std::runtime_error("Ciphertext length must be a multiple of 16.");
-        }
-        std::vector<uint8_t> state = data;
-        for (size_t i = 0; i < state.size(); i += BlockSize) {
-            invCipher(state.data() + i);
-        }
-        return pkcs7Unpad(state);
-    }
-
-    static std::string toHex(const std::vector<uint8_t>& data) {
-        std::ostringstream ss;
-        ss << std::hex << std::setfill('0');
-        for (auto b : data) ss << std::setw(2) << static_cast<int>(b);
-        return ss.str();
-    }
-
-private:
-    std::array<uint8_t, 240> roundKey{};
-    
-    // Internal AES transformations
-    void cipher(uint8_t* state);
-    void invCipher(uint8_t* state);
-    void keyExpansion(const uint8_t* key);
-    
-    // Galois Field Math
-    inline uint8_t xtime(uint8_t x) { return (x << 1) ^ ((x & 0x80) ? 0x1b : 0); }
-    uint8_t mul(uint8_t a, uint8_t b);
-
-    // Round steps
-    void addRoundKey(uint8_t* state, int round);
-    void subBytes(uint8_t* state);
-    void invSubBytes(uint8_t* state);
-    void shiftRows(uint8_t* state);
-    void invShiftRows(uint8_t* state);
-    void mixColumns(uint8_t* state);
-    void invMixColumns(uint8_t* state);
-
-    // Padding
-    std::vector<uint8_t> pkcs7Pad(const std::vector<uint8_t>& data);
-    std::vector<uint8_t> pkcs7Unpad(const std::vector<uint8_t>& data);
-
-    // Lookup Tables
-    static const std::array<uint8_t, 256> Sbox;
-    static const std::array<uint8_t, 256> InvSbox;
-    static const std::array<uint8_t, 15> Rcon; 
-};
-
+using namespace std;
 
 const std::array<uint8_t, 256> AES::Sbox = {
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -131,8 +43,6 @@ const std::array<uint8_t, 256> AES::InvSbox = {
 const std::array<uint8_t, 15> AES::Rcon = {
     0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d
 };
-
-// --- Implementation of Logic ---
 
 uint8_t AES::mul(uint8_t a, uint8_t b) {
     uint8_t r = 0;
@@ -249,44 +159,13 @@ std::vector<uint8_t> AES::pkcs7Pad(const std::vector<uint8_t>& data) {
 std::vector<uint8_t> AES::pkcs7Unpad(const std::vector<uint8_t>& data) {
     if (data.empty()) return {};
     uint8_t padLen = data.back();
-    // FIX: More robust padding validation
     if (padLen == 0 || padLen > BlockSize || padLen > data.size()) {
         throw std::runtime_error("Invalid padding");
     }
-    // FIX: Verify all padding bytes are correct
     for (size_t i = data.size() - padLen; i < data.size(); ++i) {
         if (data[i] != padLen) {
             throw std::runtime_error("Invalid padding");
         }
     }
-    return {data.begin(), data.end() - padLen};
+    return std::vector<uint8_t>(data.begin(), data.end() - padLen);
 }
-
-#endif // AES_H
-
-// Example main function (commented out - uncomment to test)
-/*
-int main() {
-    try { 
-        // Generate a 32-byte key for AES-256
-        std::vector<uint8_t> key(32);
-        for (int i = 0; i < 32; i++) key[i] = i;
-        
-        AES aes(key);
-
-        std::string plain = "Hello, C++ World!";
-        std::vector<uint8_t> data(plain.begin(), plain.end());
-
-        auto encrypted = aes.encrypt(data);
-        std::cout << "Ciphertext (Hex): " << AES::toHex(encrypted) << "\n";
-
-        auto decrypted = aes.decrypt(encrypted);
-        std::string decryptedText(decrypted.begin(), decrypted.end());
-        std::cout << "Decrypted: " << decryptedText << "\n";
-
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
-    }
-    return 0;
-}
-*/

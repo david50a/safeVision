@@ -1,10 +1,15 @@
 #ifndef AES_H
 #define AES_H
 
-#include <cstdint>
-#include <vector>
+#include <iostream>
 #include <string>
-
+#include <vector>
+#include <array>
+#include <algorithm>
+#include <iomanip>
+#include <sstream>
+#include <stdexcept>
+#include <cstdint>
 class AES {
 public:
     // AES-256 Constants
@@ -14,42 +19,72 @@ public:
     static constexpr int Nk = 8;
     static constexpr int Nr = 14;
 
-    /**
-     * @brief Constructor for AES cipher
-     * @param key A 32-byte key for AES-256
-     * @throws std::invalid_argument if key size is not 32 bytes
-     */
-    explicit AES(const std::vector<uint8_t>& key);
+    explicit AES(const std::vector<uint8_t>& key) {
+        if (key.size() != KeySize) {
+            throw std::invalid_argument("AES-256 requires a 32-byte key.");
+        }
+        keyExpansion(key.data());
+    }
 
-    /**
-     * @brief Encrypt data using AES-256
-     * @param data The plaintext to encrypt
-     * @return The encrypted ciphertext
-     */
-    std::vector<uint8_t> encrypt(const std::vector<uint8_t>& data);
+    std::vector<uint8_t> encrypt(const std::vector<uint8_t>& data) {
+        if (data.empty()) {
+            return pkcs7Pad(data);
+        }
+        
+        std::vector<uint8_t> state = pkcs7Pad(data);
+        for (size_t i = 0; i < state.size(); i += BlockSize) {
+            cipher(state.data() + i);
+        }
+        return state;
+    }
 
-    /**
-     * @brief Decrypt data using AES-256
-     * @param data The ciphertext to decrypt
-     * @return The decrypted plaintext
-     * @throws std::runtime_error if ciphertext length is not a multiple of 16
-     */
-    std::vector<uint8_t> decrypt(const std::vector<uint8_t>& data);
+    std::vector<uint8_t> decrypt(const std::vector<uint8_t>& data) {
+        if (data.empty() || data.size() % BlockSize != 0) {
+            throw std::runtime_error("Ciphertext length must be a multiple of 16.");
+        }
+        std::vector<uint8_t> state = data;
+        for (size_t i = 0; i < state.size(); i += BlockSize) {
+            invCipher(state.data() + i);
+        }
+        return pkcs7Unpad(state);
+    }
 
-    /**
-     * @brief Convert byte data to hexadecimal string
-     * @param data The byte data to convert
-     * @return Hexadecimal string representation
-     */
-    static std::string toHex(const std::vector<uint8_t>& data);
+    static std::string toHex(const std::vector<uint8_t>& data) {
+        std::ostringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (auto b : data) ss << std::setw(2) << static_cast<int>(b);
+        return ss.str();
+    }
 
 private:
-    void addRoundKey(uint8_t* state, int round);
-    void keyExpansion(const uint8_t* key);
+    std::array<uint8_t, 240> roundKey{};
+    
+    // Internal AES transformations
     void cipher(uint8_t* state);
     void invCipher(uint8_t* state);
+    void keyExpansion(const uint8_t* key);
+    
+    // Galois Field Math
+    inline uint8_t xtime(uint8_t x) { return (x << 1) ^ ((x & 0x80) ? 0x1b : 0); }
+    uint8_t mul(uint8_t a, uint8_t b);
+
+    // Round steps
+    void addRoundKey(uint8_t* state, int round);
+    void subBytes(uint8_t* state);
+    void invSubBytes(uint8_t* state);
+    void shiftRows(uint8_t* state);
+    void invShiftRows(uint8_t* state);
+    void mixColumns(uint8_t* state);
+    void invMixColumns(uint8_t* state);
+
+    // Padding
     std::vector<uint8_t> pkcs7Pad(const std::vector<uint8_t>& data);
     std::vector<uint8_t> pkcs7Unpad(const std::vector<uint8_t>& data);
+
+    // Lookup Tables (defined in aes.cpp)
+    static const std::array<uint8_t, 256> Sbox;
+    static const std::array<uint8_t, 256> InvSbox;
+    static const std::array<uint8_t, 15> Rcon; 
 };
 
 #endif // AES_H
