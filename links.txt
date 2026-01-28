@@ -1,2 +1,9 @@
 datasets: RWF-2000, Hockey Fight Vidoes, Video Fights Dataset, 
 links: https://ieeexplore.ieee.org/document/10844266,
+g++ -O3 -shared -std=c++11 -DMS_WIN64 -fPIC `
+-IC:\Users\meira\AppData\Local\Programs\Python\Python310\Include `
+-IC:\Users\meira\AppData\Local\Programs\Python\Python310\lib\site-packages\pybind11\include `
+encyption\gcm.cpp encyption\aes.cpp `
+-o gcm_lib.pyd `
+-LC:\Users\meira\AppData\Local\Programs\Python\Python310\libs `
+-lpython310
