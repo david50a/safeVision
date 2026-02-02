@@ -6,7 +6,7 @@ from typing_extensions import override
 import gcm_lib
 import json
 from typing import Dict
-import secrets
+
 class SecureVideoClientWithDH(SecureVideoStreamWithDH):
     def preform_handshake_client(self, sock=socket.socket) -> bool:
         try:

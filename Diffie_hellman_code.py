@@ -1,7 +1,6 @@
 import hashlib
 import secrets
 import socket
-from typing import Tuple,Dict,Optional
 import gcm_lib
 class DiffieHellmanKeyExchange:
     P = int(
