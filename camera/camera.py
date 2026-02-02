@@ -1,11 +1,9 @@
 import cv2
-import socket
 import config
-from protocol import send_packet
+from client import client,send_packet
 from utils import FPSLimiter
 from datetime import datetime
-client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-client.connect((config.IP,config.PORT))
+
 print('[INFO] Connected to server')
 camera = cv2.VideoCapture(0)
 limiter=FPSLimiter(config.FPS)
@@ -28,7 +26,7 @@ while True:
         'frame_size': len(data),
         'file_name': f'image_{datetime.now().strftime("%Y%m%d_%H%M%S")}.jpg'
     }
-    send_packet(client,metadata,data)
+    send_packet(metadata,data)
     if config.DEBUG:
         cv2.imshow("Frame", frame)
         if cv2.waitKey(1)& 0xFF==ord('q'):
@@ -36,5 +34,5 @@ while True:
     limiter.wait()
 camera.release()
 cv2.destroyAllWindows()
+print('[INFO] Connection closed')
 client.close()
-
