@@ -153,7 +153,7 @@ vector<uint8_t> GCM::inc32(const vector<uint8_t>& counter) {
 }
 
 vector<uint8_t> GCM::gctr(const vector<uint8_t>& icb, const vector<uint8_t>& data) {
-    if (data.empty()) return {};
+    if (data.empty()) return {};                    
     int n = ceil((double)data.size() / 16.0);
     vector<uint8_t> cb = icb;
     std::vector<uint8_t> result;

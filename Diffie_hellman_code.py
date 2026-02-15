@@ -17,7 +17,7 @@ class DiffieHellmanKeyExchange:
         "15728E5A8AACAA68FFFFFFFFFFFFFFFF", 16
     )
     G = 5
-    def __init__(self, private_key):
+    def __init__(self):
         self.private_key = secrets.randbelow(self.P-2)+2
         self.public_key=pow(self.G,self.private_key,self.P)
         self.shared_secret=None

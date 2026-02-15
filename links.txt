@@ -1,5 +1,5 @@
 datasets: RWF-2000, Hockey Fight Vidoes, Video Fights Dataset, 
-links: https://ieeexplore.ieee.org/document/10844266,
+links: https://ieeexplore.ieee.org/document/10844266, https://figshare.com/articles/dataset/NTU_RGB_D_60_120_skeleton_with_coordinates_dataset/27427188
 g++ -O3 -shared -std=c++11 -DMS_WIN64 -fPIC `
 -IC:\Users\meira\AppData\Local\Programs\Python\Python310\Include `
 -IC:\Users\meira\AppData\Local\Programs\Python\Python310\lib\site-packages\pybind11\include `
@@ -7,3 +7,12 @@ encyption\gcm.cpp encyption\aes.cpp `
 -o gcm_lib.pyd `
 -LC:\Users\meira\AppData\Local\Programs\Python\Python310\libs `
 -lpython310
+
+cl /O2 /LD ^
+/I C:\Users\meira\AppData\Local\Programs\Python\Python310\Include ^
+/I C:\Users\meira\AppData\Local\Programs\Python\Python310\Lib\site-packages\pybind11\include ^
+encyption\gcm.cpp encyption\aes.cpp ^
+/link ^
+/LIBPATH:C:\Users\meira\AppData\Local\Programs\Python\Python310\libs ^
+/OUT:gcm_lib.pyd ^
+python310.lib

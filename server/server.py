@@ -1,19 +1,22 @@
 import threading
 import socket
+
+import cv2
+
 import config
 from collections import deque
 import SecureVideoStreamWithDH
 import numpy as np
 import torch
-from lstm_model import ViolenceLSTM
+from lstm_model import SafeVisionLSTM
 import vision
 
 device = torch.device("cpu")
-
-model = ViolenceLSTM()
+'''''''''
+model = SafeVisionLSTM()
 model.load_state_dict(torch.load("model.pt", map_location=device))
 model.eval()
-
+'''
 def run_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -36,17 +39,18 @@ def run_server():
 
 def handle_client(client_socket, stream):
     sequence = deque(maxlen=30)
-
+    x=0
     while True:
         try:
             metadata, frame_bytes = stream.receive_frame(client_socket, timeout=10)
-
+            cv2.imwrite(f"data\\{x}.jpg", frame_bytes)
+            '''''''''
             frame = vision.data2numpy(
                 frame_bytes,
                 config.FRAME_HEIGHT,
                 config.FRAME_WIDTH
             )
-
+            x+=1
             keypoints = vision.imgpose(frame, vision.pose)
             sequence.append(keypoints)
 
@@ -61,7 +65,7 @@ def handle_client(client_socket, stream):
                     prediction = torch.argmax(output, dim=1).item()
 
                 print(f"[PREDICTION] {client_socket.getpeername()} → {prediction}")
-
+            '''
         except Exception as e:
             print(f"[ERROR] {e}")
             break

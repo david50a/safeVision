@@ -10,10 +10,10 @@ from typing import Dict
 class SecureVideoClientWithDH(SecureVideoStreamWithDH):
     def preform_handshake_client(self, sock=socket.socket) -> bool:
         try:
-            client_public_key=self.dh.get_public_key()
+            client_public_key=self.hd.get_public_key()
             sock.sendall(struct.pack('!I',len(client_public_key)))
             sock.sendall(client_public_key)
-            server_public_key_len=struct.unpack('!I',sock._recvexactly(sock,4))[0]
+            server_public_key_len=struct.unpack('!I',self._recvexactly(sock,4))[0]
             server_public_key=self._recv_exactly(sock,server_public_key_len)
             shared_secret=self.hd.compute_shared_secret(server_public_key)
             self._initislize_gcm(shared_secret)
