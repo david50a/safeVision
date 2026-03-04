@@ -5,7 +5,7 @@ from utils import FPSLimiter
 from datetime import datetime
 
 print('[INFO] Connected to server')
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(r'C:\Users\meir\Downloads\test.mp4')
 limiter=FPSLimiter(config.FPS)
 while True:
     ret, frame = camera.read()

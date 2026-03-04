@@ -5,18 +5,16 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-
+from torch.utils.data import random_split
 from torch.utils.data import Dataset, DataLoader
-from sklearn.model_selection import train_test_split
 from torch.utils.tensorboard import SummaryWriter
-from torch.cuda.amp import GradScaler, autocast
-
+from torch.amp import autocast,GradScaler
 import lstm_model
 
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 32
+BATCH_SIZE = 8
 EPOCHS = 100
 LR = 1e-3
 WARMUP_EPOCHS = 5
@@ -28,41 +26,48 @@ BEST_MODEL_PATH = "best_model.pth"
 LOG_DIR = "runs/safevision"
 
 class PoseDataset(Dataset):
-    def __init__(self, X, y):
-        self.X = torch.tensor(X, dtype=torch.float32)
-        self.y = torch.tensor(y, dtype=torch.long)
+    def __init__(self, directory):
+        self.directory = directory
+        self.X_chunks = []
+        self.y_chunks = []
+        self.indices = []
+
+        files = sorted([f for f in os.listdir(directory) if f.startswith("X_")])
+
+        for i, f in enumerate(files):
+            X_chunk = np.load(os.path.join(directory, f), mmap_mode='r')
+            y_chunk = np.load(os.path.join(directory, f.replace("X_", "y_")), mmap_mode='r')
+
+            self.X_chunks.append(X_chunk)
+            self.y_chunks.append(y_chunk)
+
+            for j in range(len(X_chunk)):
+                self.indices.append((i, j))
 
     def __len__(self):
-        return len(self.X)
+        return len(self.indices)
 
     def __getitem__(self, idx):
-        return self.X[idx], self.y[idx]
+        file_idx, seq_idx = self.indices[idx]
+
+        return (
+            torch.tensor(self.X_chunks[file_idx][seq_idx], dtype=torch.float32),
+            torch.tensor(self.y_chunks[file_idx][seq_idx], dtype=torch.long)
+        )
+directory = 'processed_data'
 
 
-X = np.load("X.npy")
-y = np.load("y.npy")
+dataset = PoseDataset(directory)
+train_size = int(0.8 * len(dataset))
+val_size = len(dataset) - train_size
 
-X_train, X_val, y_train, y_val = train_test_split(
-    X, y,
-    test_size=0.2,
-    stratify=y
-)
+train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
-train_loader = DataLoader(
-    PoseDataset(X_train, y_train),
-    batch_size=BATCH_SIZE,
-    shuffle=True,
-    pin_memory=True
-)
-
-val_loader = DataLoader(
-    PoseDataset(X_val, y_val),
-    batch_size=BATCH_SIZE,
-    pin_memory=True
-)
+train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
+val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, pin_memory=True)
 
 model = lstm_model.SafeVisionLSTM(
-    input_size=198,
+    input_size=150,
     hidden_size=128,
     num_classes=3
 ).to(DEVICE)
@@ -70,7 +75,7 @@ model = lstm_model.SafeVisionLSTM(
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=1e-4)
 
-scaler = GradScaler()
+scaler = GradScaler(enabled=torch.cuda.is_available())
 
 def lr_lambda(epoch):
     if epoch < WARMUP_EPOCHS:
@@ -117,8 +122,9 @@ try:
             y_batch = y_batch.to(DEVICE)
 
             optimizer.zero_grad()
-
-            with autocast():
+            print("y_batch min:", y_batch.min().item())
+            print("y_batch max:", y_batch.max().item())
+            with autocast(device_type='cuda'):
                 outputs = model(X_batch)
                 loss = criterion(outputs, y_batch)
 

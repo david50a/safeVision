@@ -9,7 +9,7 @@ import SecureVideoStreamWithDH
 import numpy as np
 import torch
 from lstm_model import SafeVisionLSTM
-import vision
+#import vision
 
 device = torch.device("cpu")
 '''''''''
@@ -27,7 +27,7 @@ def run_server():
     while True:
         client_socket, client_address = server_socket.accept()
         print(f"[INFO] Accepted connection from {client_address[0]}:{client_address[1]}")
-        stream=SecureVideoStreamWithDH.SecureVideoSeverWithDH()
+        stream=SecureVideoStreamWithDH.SecureVideoServerWithDH()
         if stream.preform_handshake_server(client_socket):
             print('[INFO] Handshake successful')
             clients.append((client_socket,stream))
@@ -35,7 +35,6 @@ def run_server():
             client_thread.start()
         else:
             print('[ERROR] Handshake failed')
-            clients.append(client_socket)
 
 def handle_client(client_socket, stream):
     sequence = deque(maxlen=30)
@@ -43,7 +42,9 @@ def handle_client(client_socket, stream):
     while True:
         try:
             metadata, frame_bytes = stream.receive_frame(client_socket, timeout=10)
-            cv2.imwrite(f"data\\{x}.jpg", frame_bytes)
+            np_arr = np.frombuffer(frame_bytes, np.uint8)
+            img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            cv2.imwrite(f"data\\{x}.jpg", img)
             '''''''''
             frame = vision.data2numpy(
                 frame_bytes,
@@ -68,6 +69,8 @@ def handle_client(client_socket, stream):
             '''
         except Exception as e:
             print(f"[ERROR] {e}")
+            import traceback
+            traceback.print_exc()
             break
 
 run_server()

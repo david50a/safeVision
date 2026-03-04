@@ -1,7 +1,7 @@
 import hashlib
 import secrets
 import socket
-import gcm_lib
+import gcm
 class DiffieHellmanKeyExchange:
     P = int(
         "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"
@@ -39,20 +39,20 @@ class DiffieHellmanKeyExchange:
         return self.shared_secret
 
 class SecureVideoStreamWithDH:
-    AAD_PREFIX = b"safeVision_"+str(secrets.randbelow(100001)).encode('utf-8')
+    AAD_PREFIX = b"safeVision"
     def __init__(self):
         self.gcm=None
         self.hd=DiffieHellmanKeyExchange()
         self.is_key_established=False
-        self.frame_count = secrets.randbelow(100001)
+        self.frame_count = 0
 
     def _initialize_gcm(self, shared_secret:bytes):
         self.shared_key=shared_secret
-        self.gcm=gcm_lib.GCM()
-        self.gcm.setKey()
+        self.gcm=gcm.GCM()
+        self.gcm.setKey(list(shared_secret))
 
     @staticmethod
-    def _recv_exactly(self,sock:socket.socket,n:int)->bytes:
+    def _recv_exactly(sock:socket.socket,n:int)->bytes:
         data=b''
         while len(data)<n:
             packet=sock.recv(n-len(data))

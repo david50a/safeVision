@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 import mediapipe as mp
+from mediapipe.tasks.python import vision
+from mediapipe.tasks.python.core.base_options import BaseOptions
 import cv2
 import config
 
@@ -12,31 +14,22 @@ def data2numpy(data: bytes) -> np.ndarray:
     )
     return frame
 
-
-import numpy as np
-import cv2
-import mediapipe as mp
-
-mp_pose = mp.solutions.pose
-mp_drawing = mp.solutions.drawing_utils
-
-pose = mp_pose.Pose(
-    static_image_mode=False,
-    model_complexity=1,
-    enable_segmentation=False,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5,
+model_path = "pose_landmarker_lite.task"
+base_options = BaseOptions(model_asset_path=model_path)
+options = vision.PoseLandmarkerOptions(
+    base_options=base_options,
+    running_mode=vision.RunningMode.IMAGE
 )
 
+detector = vision.PoseLandmarker.create_from_options(options)
 
 def extract_keypoints(results):
-    if results.pose_landmarks:
+    if results.pose_landmarks and len(results.pose_landmarks) > 0:
         keypoints = []
-        for lm in results.pose_landmarks.landmark:
+        for lm in results.pose_landmarks[0]:  # first detected person
             keypoints.extend([lm.x, lm.y, lm.z])
-        return np.array(keypoints)
-    return np.zeros(99)
-
+        return np.array(keypoints, dtype=np.float32)
+    return np.zeros(99, dtype=np.float32)
 
 def normalize_keypoints(keypoints):
     keypoints = keypoints.reshape(33, 3)
@@ -113,7 +106,13 @@ def compute_angles(keypoints):
 
 def extract_features(frame, prev_keypoints=None, prev_velocity=None):
     img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = pose.process(img_rgb)
+
+    mp_image = mp.Image(
+        image_format=mp.ImageFormat.SRGB,
+        data=img_rgb
+    )
+
+    results = detector.detect(mp_image)
 
     keypoints = extract_keypoints(results)
     keypoints = normalize_keypoints(keypoints)
@@ -151,7 +150,7 @@ class SafeVisionLSTM(nn.Module):
     def __init__(self,
                  input_size=308,
                  hidden_size=128,
-                 num_classes=3):
+                 num_classes=120):
         super().__init__()
 
         self.feature_extractor = nn.Sequential(
@@ -170,7 +169,7 @@ class SafeVisionLSTM(nn.Module):
             bidirectional=True
         )
 
-        self.attention = Attention(hidden_size)
+        self.attention = Attention(hidden_size * 2)
 
         self.classifier = nn.Sequential(
             nn.Dropout(0.3),
