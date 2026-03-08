@@ -4,8 +4,7 @@ import struct
 import os
 import json
 from typing import Optional, Tuple, Dict
-
-
+import hmac_lib
 class SecureVideoServerWithDH(SecureVideoStreamWithDH):
     def preform_handshake_server(self, sock: socket.socket) -> bool:
         try:
@@ -26,6 +25,9 @@ class SecureVideoServerWithDH(SecureVideoStreamWithDH):
             confirmation = b'HANDSHAKE_OK'
             iv = os.urandom(12)
             ct, tag = self.gcm.encrypt(iv, confirmation, b'handshake_verify')
+            iv=hmac_lib.hmac_sha256(shared_secret, iv)
+            ct=hmac_lib.hmac_sha256(shared_secret, ct)
+            tag=hmac_lib.hmac_sha256(shared_secret, tag)
             sock.sendall(iv)
             sock.sendall(tag)
             sock.sendall(struct.pack('!I', len(ct)))
@@ -36,8 +38,11 @@ class SecureVideoServerWithDH(SecureVideoStreamWithDH):
             tag = self._recv_exactly(sock, 16)
             ct_len = struct.unpack('!I', self._recv_exactly(sock, 4))[0]
             ct = self._recv_exactly(sock, ct_len)
-
+            iv=hmac_lib.hmac_sha256(shared_secret, iv)
+            ct=hmac_lib.hmac_sha256(shared_secret, ct)
+            tag=hmac_lib.hmac_sha256(shared_secret, tag)
             confirm_msg = self.gcm.decrypt(iv, ct, b'handshake_verify', tag)
+
             if confirm_msg != b'HANDSHAKE_OK':
                 raise ValueError("Handshake verification failed")
 
@@ -60,6 +65,9 @@ class SecureVideoServerWithDH(SecureVideoStreamWithDH):
             meta_tag = self._recv_exactly(sock, 16)
             meta_ct_len = struct.unpack('!I', self._recv_exactly(sock, 4))[0]
             meta_ct = self._recv_exactly(sock, meta_ct_len)
+            meta_tag=hmac_lib.hmac_sha256(self.shared_secret, meta_tag)
+            meta_iv=hmac_lib.hmac_sha256(self.shared_secret, meta_iv)
+            meta_ct=hmac_lib.hmac_sha256(self.shared_secret, meta_ct)
             meta_json = self.gcm.decrypt(meta_iv, meta_ct, b'metadata', meta_tag)
             metadata = json.loads(meta_json.decode('utf-8'))
 
@@ -68,7 +76,9 @@ class SecureVideoServerWithDH(SecureVideoStreamWithDH):
             tag = self._recv_exactly(sock, 16)
             ct_len = struct.unpack('!I', self._recv_exactly(sock, 4))[0]
             ct = self._recv_exactly(sock, ct_len)
-
+            iv=hmac_lib.hmac_sha256(self.shared_secret, iv)
+            ct=hmac_lib.hmac_sha256(self.shared_secret, ct)
+            tag=hmac_lib.hmac_sha256(self.shared_secret, tag)
             # Construct AAD exactly as client does
             add = self.AAD_PREFIX + struct.pack('!I', self.frame_count) + metadata['file_name'].encode('utf-8')
             frame = self.gcm.decrypt(iv, ct, add, tag)
