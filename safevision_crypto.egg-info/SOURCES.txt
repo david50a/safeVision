@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+setup.py
+encryption/HMAC.cpp
+encryption/aes.cpp
+encryption/gcm.cpp
+safevision_crypto.egg-info/PKG-INFO
+safevision_crypto.egg-info/SOURCES.txt
+safevision_crypto.egg-info/dependency_links.txt
+safevision_crypto.egg-info/top_level.txt
