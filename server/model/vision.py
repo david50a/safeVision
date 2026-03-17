@@ -2,36 +2,49 @@ import numpy as np
 import cv2
 import mediapipe as mp
 from mediapipe.tasks.python.vision import PoseLandmarker
+from mediapipe.tasks.python.core.base_options import BaseOptions
+from mediapipe.tasks.python import vision as mp_vision
 import atexit
 import os
 import logging
+
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 logging.getLogger('mediapipe').setLevel(logging.ERROR)
 
 # Patch mediapipe's broken __del__ to suppress Windows shutdown crash
 PoseLandmarker.__del__ = lambda self: None
 
+LANDMARKERS=33
+KEYPOINT_SIZE = LANDMARKERS * 3
+
 BaseOptions = mp.tasks.BaseOptions
 PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 VisionRunningMode = mp.tasks.vision.RunningMode
 
-options = PoseLandmarkerOptions(
-    base_options=BaseOptions(model_asset_path='pose_landmarker_lite.task'),
-    running_mode=VisionRunningMode.IMAGE,
-)
 
-pose_landmarker = PoseLandmarker.create_from_options(options)
+_MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),'pose_landmarker_lite.task')
 
-def _cleanup():
-    try:
-        pose_landmarker.close()
-    except Exception:
-        pass
+_image_landmarker=None
+def _get_image_landmarker():
+    global _image_landmarker
+    if _image_landmarker is None:
+        options = PoseLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=_MODEL_PATH),
+            running_mode=VisionRunningMode.IMAGE,
+        )
+        pose_landmarker = PoseLandmarker.create_from_options(options)
 
-atexit.register(_cleanup)
+    def _cleanup():
+        try:
+            pose_landmarker.close()
+        except Exception:
+            pass
 
-LANDMARKS = 33
-KEYPOINT_SIZE = LANDMARKS * 3
+    atexit.register(_cleanup)
+    return _image_landmarker
+
+pose_landmarker = _get_image_landmarker()
+
 
 POSE_CONNECTIONS = [
     (0, 1), (1, 2), (2, 3), (3, 7),
@@ -43,6 +56,44 @@ POSE_CONNECTIONS = [
     (23, 25), (25, 27), (27, 29), (27, 31), (29, 31),
     (24, 26), (26, 28), (28, 30), (28, 32), (30, 32),
 ]
+
+class VideoProcessor:
+    def __init__(self,model_path:str=None):
+        self.model_path = model_path or _MODEL_PATH
+        self._landmarker=None
+
+    def __enter__(self):
+        opts=mp_vision.PoseLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=self.model_path),
+            running_mode=VisionRunningMode.VIDEO,
+            min_pose_detection_confidence=0.5,
+            min_pose_presence_confidence=0.5,
+            min_tracking_confidence=0.5,
+        )
+        self._landmarker = mp_vision.PoseLandmarker.create_from_options(opts)
+        return self
+
+    def __exit__(self, *args):
+        if self._landmarker:
+            try:
+                self._landmarker.close()
+            except Exception:
+                pass
+            self._landmarker=None
+    def process(self,frame,timestamp_ms:int)->np.ndarray:
+        if frame is None:
+            return np.zeros(KEYPOINT_SIZE, dtype=np.float32)
+        try:
+            img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            mp_image = mp.Image(
+                image_format=mp.ImageFormat.SRGB,
+                data=img_rgb
+                )
+            detection_result = self._landmarker.detect_for_video(mp_image,timestamp_ms)
+            return extract_waypoints(detection_result)
+        except Exception as e:
+            print("[VISION ERROR]", e)
+            return np.zeros(KEYPOINT_SIZE, dtype=np.float32)
 
 def draw_landmarks_on_frame(frame, detection_result):
     if not detection_result.pose_landmarks:
@@ -74,7 +125,7 @@ def data2numpy(data, h, w):
         return None
 
 
-def extract_waypoints(detection_result):
+def extract_waypoints(detection_result)->np.ndarray:
     if not detection_result.pose_landmarks:
         return np.zeros(KEYPOINT_SIZE, dtype=np.float32)
     keypoints = []

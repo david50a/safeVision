@@ -7,3 +7,4 @@ typing-extensions==4.15.0
 pybind11==3.0.2
 setuptools==80.9.0
 wheel==0.45.1
+seaborn==0.13.2

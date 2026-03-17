@@ -9,7 +9,7 @@ import SecureVideoStreamWithDH
 from model.lstm_model import SafeVisionLSTM
 from model.lstm_model import extract_features
 import cv2
-
+import ssl
 
 device = torch.device("cpu")
 model = SafeVisionLSTM().to(device)
@@ -113,26 +113,30 @@ def model_worker():
 
 
 def run_server():
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(certfile="server.crt", keyfile="server.key")
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((config.IP, config.PORT))
     server_socket.listen()
     print(f"[SERVER] Listening on {config.IP}:{config.PORT}")
-    while True:
-        client_socket, client_address = server_socket.accept()
-        print(f"[SERVER] Client {client_address}")
-        stream = SecureVideoStreamWithDH.SecureVideoServerWithDH()
-        if stream.preform_handshake_server(client_socket):
-            print("[SECURE] Handshake success")
-            client_thread = threading.Thread(
-                target=handle_client,
-                args=(client_socket, stream),
-                daemon=True
-            )
-            client_thread.start()
-        else:
-            print("[SECURE] Handshake failed")
-            client_socket.close()
+    with context.wrap_socket(server_socket, server_side=True) as s:
+        while True:
+            client_socket, client_address = s.accept()
+            client=context.wrap_socket(client_socket, server_side=True)
+            print(f"[SERVER] Client {client_address}")
+            stream = SecureVideoStreamWithDH.SecureVideoServerWithDH()
+            if stream.preform_handshake_server(client):
+                print("[SECURE] Handshake success")
+                client_thread = threading.Thread(
+                    target=handle_client,
+                    args=(client, stream),
+                    daemon=True
+                )
+                client_thread.start()
+            else:
+                print("[SECURE] Handshake failed")
+                client_socket.close()
 
 
 def start_system():
