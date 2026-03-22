@@ -59,7 +59,7 @@ FLOW_BINS    = 8     # direction histogram bins
 # Frame sampling
 FRAME_SAMPLE = 2     # process every 2nd frame
 
-CLASS_MAP = {'SAFE': 0, 'DANGER': 1}  # binary: Safe vs Danger (pre-violence + violence combined)
+CLASS_MAP = {'SAFE': 0, 'PRE_VIOLENCE': 1, 'VIOLENCE': 2}
 
 # UCF-Crime folder structure
 FIGHT_FOLDERS = [
@@ -408,19 +408,37 @@ def create_sequences_normal(features: np.ndarray):
 
 def create_sequences_fight(features, onset_frame=None, video_total_frames=None):
     """
-    All windows from a fight video → DANGER (1).
-    Binary approach: we don't split pre-violence vs violence.
-    The rising confidence score over time gives the 2-3s early warning.
-    No transition zone needed — every window is a danger signal.
+    Windows before onset -> PRE_VIOLENCE (1)
+    Windows after onset -> VIOLENCE (2)
     """
     X, y = [], []
     T    = len(features)
+
+    # If no onset is provided, assume middle of the video
+    if onset_frame is None:
+        if video_total_frames and video_total_frames > 0:
+            onset_frame = video_total_frames // 2
+        else:
+            onset_frame = T // 2
+
+    # Account for FRAME_SAMPLE (e.g. process every 2nd frame)
+    # The actual feature array has length T ≈ video_total_frames // FRAME_SAMPLE
+    # So the onset index in the feature array should be scaled down.
+    onset_idx = int(onset_frame / FRAME_SAMPLE)
 
     for i in range(0, T - SEQUENCE_LENGTH + 1, STEP):
         seq = features[i: i + SEQUENCE_LENGTH]
         if len(seq) == SEQUENCE_LENGTH:
             X.append(seq)
-            y.append(CLASS_MAP['DANGER'])
+
+            # The middle of the sequence is its representative point
+            mid_point = i + SEQUENCE_LENGTH // 2
+
+            # Label based on onset
+            if mid_point < onset_idx:
+                y.append(CLASS_MAP['PRE_VIOLENCE'])
+            else:
+                y.append(CLASS_MAP['VIOLENCE'])
 
     if len(X) > MAX_FIGHT_WINDOWS:
         idx = sorted(random.sample(range(len(X)), MAX_FIGHT_WINDOWS))

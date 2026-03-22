@@ -24,7 +24,7 @@ OBSERVE_VAL   = 0.6
 
 INPUT_SIZE  = 440      # 308 pose + 132 optical flow
 HIDDEN_SIZE = 256
-NUM_CLASSES = 2  # binary: Safe (0) vs Danger (1)
+NUM_CLASSES = 3  # Safe (0), Pre-Violence (1), Violence (2)
 
 ARCH_VERSION    = 'v2'
 LOG_DIR         = 'runs/safevision'
@@ -88,10 +88,12 @@ def compute_class_weights(dataset, num_classes, device):
     weights = 1.0 / (counts + 1e-6)
     weights = weights / weights.sum() * num_classes
 
-    # Binary — no class collapse issue, pure inverse frequency is enough
-    # Slight boost for Danger class since missing a fight is worse than false alarm
+    # Boost for Danger classes since missing a fight is worse than false alarm
     DANGER_BOOST = 1.5
-    weights[1] *= DANGER_BOOST
+    if num_classes >= 2:
+        weights[1] *= DANGER_BOOST
+    if num_classes >= 3:
+        weights[2] *= DANGER_BOOST
     weights = weights / weights.sum() * num_classes
 
     print(f"Class counts : {counts.long().tolist()}")

@@ -29,7 +29,7 @@ import lstm_model
 
 # ── Config ────────────────────────────────────────────────────────────────────
 MODEL_PATH    = 'safeVision_model.pth'
-INPUT_SIZE    = 297       # must match your training input_size
+INPUT_SIZE    = 440       # must match your training input_size (308 pose + 132 flow)
 HIDDEN_SIZE   = 256       # must match your training hidden_size
 NUM_CLASSES   = 3
 OBSERVE_RATIO = 0.6
@@ -270,10 +270,14 @@ def run_video(model, video_path, show=True):
 
         # Extract pose features
         try:
-            features, curr_kp, curr_vel = lstm_model.extract_features(
+            pose_features, curr_kp, curr_vel = lstm_model.extract_features(
                 frame, prev_kp, prev_vel
             )
             prev_kp, prev_vel = curr_kp, curr_vel
+            # In live webcam/video test, we might not have flow, so we zero pad the flow features
+            # 308 pose + 132 flow = 440 total
+            flow_features = np.zeros(132, dtype=np.float32)
+            features = np.concatenate([pose_features, flow_features])
         except Exception:
             features = np.zeros(INPUT_SIZE, dtype=np.float32)
 
@@ -398,10 +402,13 @@ def run_webcam(model, cam_id=0):
 
         # Extract features
         try:
-            features, curr_kp, curr_vel = lstm_model.extract_features(
+            pose_features, curr_kp, curr_vel = lstm_model.extract_features(
                 frame, prev_kp, prev_vel
             )
             prev_kp, prev_vel = curr_kp, curr_vel
+            # Zero pad flow features for live demo
+            flow_features = np.zeros(132, dtype=np.float32)
+            features = np.concatenate([pose_features, flow_features])
         except Exception:
             features = np.zeros(INPUT_SIZE, dtype=np.float32)
 
