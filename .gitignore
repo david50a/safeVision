@@ -44,7 +44,9 @@ model/*.onnx.enc
 model/*.task
 model/onnxruntime_sdk/
 model/onnxruntime_sdk.zip
-server/model/
+server/model/dataset/
+server/model/*.pt
+server/model/*.onnx
 
 # IDEs
 .vscode/
