@@ -1,0 +1,58 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.dll
+*.so
+*.dylib
+*.exe
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Sensitive Information
+.env
+*.pt
+*.crt
+*.key
+rbac_db.json
+server_audit.jsonl
+*.log
+*.zip
+*.onnx
+*.dll
+*.pdb
+*.exe
+*.enc
+*.pt
+*.task
+# Local Database & Storage
+database/*.jsonl
+data/
+recordings/
+server/recordings/
+
+# Machine Learning Models
+# We exclude weights and exported formats as they are large/proprietary
+model/*.pt
+model/*.pt.enc
+model/*.onnx
+model/*.onnx.enc
+model/*.task
+model/onnxruntime_sdk/
+model/onnxruntime_sdk.zip
+server/model/dataset
+server/model/
+
+# IDEs
+.vscode/
+.idea/
+.antigravity/
+onnxruntime_sdk/
+
+# Video Examples
+*.mp4
+*.webm

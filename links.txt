@@ -1,0 +1,25 @@
+datasets: RWF-2000, Hockey Fight Vidoes, Video Fights Dataset,XD_Violence_video_dataset
+links: https://ieeexplore.ieee.org/document/10844266, https://figshare.com/articles/dataset/NTU_RGB_D_60_120_skeleton_with_coordinates_dataset/27427188
+g++ -O3 -shared -std=c++11 -DMS_WIN64 -fPIC `
+-IC:\Users\meira\AppData\Local\Programs\Python\Python310\Include `
+-IC:\Users\meira\AppData\Local\Programs\Python\Python310\lib\site-packages\pybind11\include `
+encyption\gcm.cpp encyption\aes.cpp `
+-o gcm_lib.pyd `
+-LC:\Users\meira\AppData\Local\Programs\Python\Python310\libs `
+-lpython310
+
+cl /O2 /LD ^
+/I C:\Users\meira\AppData\Local\Programs\Python\Python310\Include ^
+/I C:\Users\meira\AppData\Local\Programs\Python\Python310\Lib\site-packages\pybind11\include ^
+encyption\gcm.cpp encyption\aes.cpp ^
+/link ^
+/LIBPATH:C:\Users\meira\AppData\Local\Programs\Python\Python310\libs ^
+/OUT:gcm_lib.pyd ^
+python310.lib
+
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt
+
+"C:\Users\meir\Documents\datasets\UCF_CRIME\FightingA_Part2\Fighting\Fighting033_x264A.mp4"
+"C:\Users\meir\Documents\datasets\UCF_CRIME\FightingA_Part11\Fighting\Fighting006_x264A.mp4"
+"C:\Users\meir\Documents\datasets\UCF_CRIME\FightingA_Part1\Fighting\Fighting013_x264A.mp4"
+python export_onnx.py --model "previolence_model\checkpoints\best.pt" --out "previolence_model.onnx" --encrypt --cleanup

@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="SafeVision Security Center — Real-time violence detection monitoring, alerts, and reports.">
+    <title>SafeVision — Security Center</title>
+    <link rel="stylesheet" href="/static/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+    <!--          LOGIN MODAL          -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <div class="login-logo">
+                <svg viewBox="0 0 48 48" width="56" height="56">
+                    <path d="M24 4L6 14v14c0 11 8 18 18 20 10-2 18-9 18-20V14L24 4z" fill="none" stroke="var(--accent)"
+                        stroke-width="2.5" />
+                    <circle cx="24" cy="18" r="3" fill="var(--accent)" />
+                    <path d="M24 21v6M20 27h8M20 27l-2 6M28 27l2 6M22 21l-3-3M26 21l3-3" stroke="var(--accent)"
+                        stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+                <h1>Safe<span>Vision</span></h1>
+                <p class="login-subtitle">Security Center</p>
+            </div>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input id="username" type="text" placeholder="admin" autocomplete="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" placeholder="••••••••" autocomplete="current-password"
+                        required>
+                </div>
+                <p id="login-error" class="login-error"></p>
+                <button type="submit" id="login-btn" class="btn-primary">Sign In</button>
+            </form>
+            <div class="login-footer">
+                <span class="security-badge"> TLS/SSL Encrypted</span>
+                <span class="security-badge"> RBAC Protected</span>
+            </div>
+        </div>
+    </div>
+
+    <!--          DASHBOARD          -->
+    <div id="dashboard" class="dashboard hidden">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <svg viewBox="0 0 48 48" width="32" height="32">
+                    <path d="M24 4L6 14v14c0 11 8 18 18 20 10-2 18-9 18-20V14L24 4z" fill="none" stroke="var(--accent)"
+                        stroke-width="2.5" />
+                    <circle cx="24" cy="18" r="3" fill="var(--accent)" />
+                    <path d="M24 21v6M20 27h8M20 27l-2 6M28 27l2 6" stroke="var(--accent)" stroke-width="1.5"
+                        stroke-linecap="round" />
+                </svg>
+                <span>Safe<b>Vision</b></span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview-section" id="nav-overview">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                    Overview
+                </a>
+                <a href="#" class="nav-item" data-section="alarms-section" id="nav-alarms">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+                    </svg>
+                    Alarms
+                    <span class="badge badge-alarm" id="alarm-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-section="guards-section" id="nav-guards">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                    </svg>
+                    Guards &amp; Zones
+                </a>
+                <a href="#" class="nav-item" data-section="reports-section" id="nav-reports">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    Reports
+                </a>
+                <a href="#" class="nav-item" data-section="alerts-section" id="nav-alerts">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                    </svg>
+                    Live Alerts
+                    <span class="badge" id="alert-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-section="live-stream-section" id="nav-live-stream">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 7l-7 5 7 5V7z" />
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                    </svg>
+                    Live Video
+                </a>
+                <a href="#" class="nav-item" data-section="recordings-section" id="nav-recordings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Recordings
+                </a>
+                <a href="#" class="nav-item" data-section="system-section" id="nav-system">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                    </svg>
+                    System
+                </a>
+                <a href="#" class="nav-item" data-section="guardiance-section" id="nav-guardiance">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Guardiance
+                </a>
+                <a href="#" class="nav-item" data-section="security-section" id="nav-security">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Security
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div>
+                        <p class="user-name" id="user-name">Admin</p>
+                        <p class="user-role" id="user-role">admin</p>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn-logout" title="Logout">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+                    </svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h2 id="page-title">Overview</h2>
+                <div class="topbar-right">
+                    <div class="status-indicator" id="connection-status">
+                        <span class="dot dot-green"></span>
+                        <span>Connected</span>
+                    </div>
+                    <span class="topbar-time" id="topbar-time"></span>
+                </div>
+            </header>
+
+            <!--   OVERVIEW   -->
+            <section id="overview-section" class="content-section active">
+                <div class="cards-grid">
+                    <div class="stat-card" id="card-total">
+                        <div class="stat-icon icon-blue">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Events</p>
+                            <h3 class="stat-value" id="stat-total">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="card-alerts">
+                        <div class="stat-icon icon-red">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Active Alerts</p>
+                            <h3 class="stat-value" id="stat-alerts">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="card-safe">
+                        <div class="stat-icon icon-green">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Safe Rate</p>
+                            <h3 class="stat-value" id="stat-safe">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="card-uptime">
+                        <div class="stat-icon icon-purple">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Uptime</p>
+                            <h3 class="stat-value" id="stat-uptime">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="card-clients">
+                        <div class="stat-icon icon-green">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="2" y="7" width="20" height="15" rx="2" />
+                                <path d="M17 7V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2" />
+                                <circle cx="12" cy="14" r="2" />
+                                <path d="M12 16v2" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Live Clients</p>
+                            <h3 class="stat-value" id="stat-clients">—</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick alerts preview -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Recent Alerts</h3>
+                        <button class="btn-sm" onclick="App.switchSection('alerts-section')">View All →</button>
+                    </div>
+                    <div id="overview-alerts-list" class="alerts-list"></div>
+                </div>
+
+                <!-- Timeline chart -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Event Timeline</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="overview-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!--   ALARMS   -->
+            <section id="alarms-section" class="content-section">
+
+                <!-- Stat cards -->
+                <div class="cards-grid" id="alarm-stats-grid">
+                    <div class="stat-card alarm-stat-card">
+                        <div class="stat-icon icon-red alarm-pulse-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Active Alarms</p>
+                            <h3 class="stat-value" id="alarm-stat-active">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-yellow">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Acknowledged</p>
+                            <h3 class="stat-value" id="alarm-stat-ack">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-green">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="15" y1="9" x2="9" y2="15" />
+                                <line x1="9" y1="9" x2="15" y2="15" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Dismissed</p>
+                            <h3 class="stat-value" id="alarm-stat-dismissed">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-purple">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                <path d="M3 9h18M9 21V9" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Alarms</p>
+                            <h3 class="stat-value" id="alarm-stat-total">—</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live alarm feed -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>🔔 Live Alarm Feed</h3>
+                        <div class="filters">
+                            <select id="alarm-filter-state">
+                                <option value="">All States</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="ACKNOWLEDGED">Acknowledged</option>
+                                <option value="DISMISSED">Dismissed</option>
+                            </select>
+                            <button class="btn-sm" id="btn-refresh-alarms">↻ Refresh</button>
+                        </div>
+                    </div>
+                    <div id="alarm-list-container" class="alarm-table-wrapper">
+                        <table class="alarm-table" id="alarm-table">
+                            <thead>
+                                <tr>
+                                    <th>Severity</th>
+                                    <th>Camera</th>
+                                    <th>Location</th>
+                                    <th>Label</th>
+                                    <th>Probability</th>
+                                    <th>Fired At</th>
+                                    <th>State</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alarm-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Alarm Rules editor (admin only) -->
+                <div class="panel" id="alarm-rules-panel">
+                    <div class="panel-header">
+                        <h3> Alarm Rules</h3>
+                        <button class="btn-sm btn-accent" id="btn-add-rule" style="display:none">+ Add Rule</button>
+                    </div>
+                    <div id="alarm-rules-container">
+                        <table class="alarm-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Triggers</th>
+                                    <th>Min Prob.</th>
+                                    <th>Cooldown</th>
+                                    <th>Severity</th>
+                                    <th>SMS</th>
+                                    <th>Status</th>
+                                    <th id="rules-actions-header"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="alarm-rules-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Add Rule Form (hidden by default) -->
+                    <div id="add-rule-form" class="rule-form" style="display:none">
+                        <h4>New Alarm Rule</h4>
+                        <div class="rule-form-grid">
+                            <div class="input-group">
+                                <label for="rule-name">Rule Name</label>
+                                <input id="rule-name" type="text" placeholder="e.g. Night-time Violence Alert">
+                            </div>
+                            <div class="input-group">
+                                <label for="rule-severity">Severity</label>
+                                <select id="rule-severity">
+                                    <option value="CRITICAL">CRITICAL</option>
+                                    <option value="WARNING">WARNING</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="rule-min-prob">Min Probability (0–1)</label>
+                                <input id="rule-min-prob" type="number" min="0" max="1" step="0.05" placeholder="0.55">
+                            </div>
+                            <div class="input-group">
+                                <label for="rule-cooldown">Cooldown (seconds)</label>
+                                <input id="rule-cooldown" type="number" min="10" step="10" placeholder="60">
+                            </div>
+                            <div class="input-group">
+                                <label>Label Triggers</label>
+                                <div class="checkbox-group">
+                                    <label><input type="checkbox" id="trig-violence" value="VIOLENCE" checked>
+                                        VIOLENCE</label>
+                                    <label><input type="checkbox" id="trig-previolence" value="PRE-VIOLENCE">
+                                        PRE-VIOLENCE</label>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Notifications</label>
+                                <div class="checkbox-group">
+                                    <label><input type="checkbox" id="rule-sms" checked> SMS to Guards</label>
+                                    <label><input type="checkbox" id="rule-email"> Email</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:14px">
+                            <button class="btn-primary" style="width:auto;padding:10px 24px" id="btn-submit-rule">Save
+                                Rule</button>
+                            <button class="btn-sm" id="btn-cancel-rule">Cancel</button>
+                        </div>
+                        <p id="rule-form-error" class="login-error"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!--   GUARDS & ZONES   -->
+            <section id="guards-section" class="content-section">
+
+                <!-- Guards Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>👮 Guards</h3>
+                        <button class="btn-sm btn-accent" id="btn-show-add-guard">+ Add Guard</button>
+                    </div>
+
+                    <!-- Add Guard Form -->
+                    <div id="add-guard-form" class="rule-form" style="display:none">
+                        <h4>New Guard</h4>
+                        <div class="rule-form-grid">
+                            <div class="input-group">
+                                <label for="guard-name">Full Name *</label>
+                                <input id="guard-name" type="text" placeholder="e.g. David Cohen">
+                            </div>
+                            <div class="input-group">
+                                <label for="guard-phone">Phone Number (for SMS alerts) *</label>
+                                <input id="guard-phone" type="tel" placeholder="+972501234567">
+                            </div>
+                            <div class="input-group">
+                                <label for="guard-email">Email</label>
+                                <input id="guard-email" type="email" placeholder="guard@example.com">
+                            </div>
+                            <div class="input-group">
+                                <label for="guard-badge">Badge ID</label>
+                                <input id="guard-badge" type="text" placeholder="G-0042">
+                            </div>
+                            <div class="input-group">
+                                <label for="guard-notes">Notes</label>
+                                <input id="guard-notes" type="text" placeholder="Night shift">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:14px">
+                            <button class="btn-primary" style="width:auto;padding:10px 24px" id="btn-submit-guard">Save
+                                Guard</button>
+                            <button class="btn-sm" id="btn-cancel-guard">Cancel</button>
+                        </div>
+                        <p id="guard-form-error" class="login-error"></p>
+                    </div>
+
+                    <!-- Guards Table -->
+                    <div class="alarm-table-wrapper">
+                        <table class="alarm-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Badge</th>
+                                    <th>Zones</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guards-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Zones Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>🗺️ Zones</h3>
+                        <button class="btn-sm btn-accent" id="btn-show-add-zone">+ Add Zone</button>
+                    </div>
+
+                    <!-- Add Zone Form -->
+                    <div id="add-zone-form" class="rule-form" style="display:none">
+                        <h4>New Zone</h4>
+                        <div class="rule-form-grid">
+                            <div class="input-group">
+                                <label for="zone-name">Zone Name *</label>
+                                <input id="zone-name" type="text" placeholder="e.g. Main Lobby">
+                            </div>
+                            <div class="input-group">
+                                <label for="zone-desc">Description</label>
+                                <input id="zone-desc" type="text" placeholder="Ground floor entrance">
+                            </div>
+                            <div class="input-group">
+                                <label for="zone-cameras">Camera IDs (comma-separated)</label>
+                                <input id="zone-cameras" type="text" placeholder="CAM-01, CAM-02">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:14px">
+                            <button class="btn-primary" style="width:auto;padding:10px 24px" id="btn-submit-zone">Save
+                                Zone</button>
+                            <button class="btn-sm" id="btn-cancel-zone">Cancel</button>
+                        </div>
+                        <p id="zone-form-error" class="login-error"></p>
+                    </div>
+
+                    <!-- Zones Table -->
+                    <div class="alarm-table-wrapper">
+                        <table class="alarm-table">
+                            <thead>
+                                <tr>
+                                    <th>Zone Name</th>
+                                    <th>Description</th>
+                                    <th>Cameras</th>
+                                    <th>Guards</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="zones-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Guard ↔ Zone Assignment Panel -->
+                <div class="panel" id="assignment-panel" style="display:none">
+                    <div class="panel-header">
+                        <h3 id="assignment-title">Assign Guard to Zones</h3>
+                        <button class="btn-sm" id="btn-close-assignment">✕ Close</button>
+                    </div>
+                    <div id="assignment-body" class="assignment-grid"></div>
+                </div>
+
+            </section>
+
+            <!--   REPORTS   -->
+            <section id="reports-section" class="content-section">
+
+                <!-- Filters Bar -->
+                <div class="panel report-filters-panel">
+                    <div class="report-filters-row">
+                        <div class="input-group">
+                            <label for="rpt-from">From</label>
+                            <input id="rpt-from" type="date">
+                        </div>
+                        <div class="input-group">
+                            <label for="rpt-to">To</label>
+                            <input id="rpt-to" type="date">
+                        </div>
+                        <div class="input-group">
+                            <label for="rpt-camera">Camera</label>
+                            <input id="rpt-camera" type="text" placeholder="All cameras">
+                        </div>
+                        <div class="input-group">
+                            <label for="rpt-severity">Severity</label>
+                            <select id="rpt-severity">
+                                <option value="">All</option>
+                                <option value="CRITICAL">Critical</option>
+                                <option value="WARNING">Warning</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="rpt-encryption-key">Encryption Key</label>
+                            <input id="rpt-encryption-key" type="password" placeholder="Key for snapshots/PDF">
+                        </div>
+                        <div class="report-filter-actions">
+                            <button class="btn-primary" style="width:auto;padding:10px 20px" id="btn-run-report">
+                                🔍 Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick presets -->
+                    <div class="report-presets">
+                        <span class="preset-label">Quick:</span>
+                        <button class="preset-btn" data-days="7">Last 7 days</button>
+                        <button class="preset-btn" data-days="30">Last 30 days</button>
+                        <button class="preset-btn" data-days="90">Last 90 days</button>
+                    </div>
+                </div>
+
+                <!-- Summary stat cards -->
+                <div class="cards-grid" id="rpt-stat-cards" style="display:none">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-red">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Incidents</p>
+                            <h3 class="stat-value" id="rpt-total">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-red">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Critical</p>
+                            <h3 class="stat-value" id="rpt-critical">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-yellow">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Warning</p>
+                            <h3 class="stat-value" id="rpt-warning">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-purple">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                <path d="M3 9h18M9 21V9" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Cameras Affected</p>
+                            <h3 class="stat-value" id="rpt-cameras">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-green">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Avg Ack Time</p>
+                            <h3 class="stat-value" id="rpt-ack-time">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-blue">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013 7.82a2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.91 12.91a16 16 0 006.29 6.29" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">SMS Sent</p>
+                            <h3 class="stat-value" id="rpt-sms">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-blue">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                <polyline points="22,6 12,13 2,6" />
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Emails Sent</p>
+                            <h3 class="stat-value" id="rpt-email">—</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts row -->
+                <div class="report-charts-row" id="rpt-charts-row" style="display:none">
+
+                    <!-- Daily trend -->
+                    <div class="panel report-chart-panel">
+                        <div class="panel-header">
+                            <h3> Daily Trend</h3>
+                        </div>
+                        <canvas id="rpt-chart-daily" height="180"></canvas>
+                    </div>
+
+                    <!-- Hourly heatmap -->
+                    <div class="panel report-chart-panel">
+                        <div class="panel-header">
+                            <h3>⏰ Hourly Heatmap</h3>
+                        </div>
+                        <canvas id="rpt-chart-hourly" height="180"></canvas>
+                    </div>
+                </div>
+
+                <!-- Camera breakdown + Export -->
+                <div class="report-bottom-row" id="rpt-bottom-row" style="display:none">
+
+                    <!-- Camera breakdown table -->
+                    <div class="panel report-camera-panel">
+                        <div class="panel-header">
+                            <h3>📷 Camera Breakdown</h3>
+                        </div>
+                        <div class="alarm-table-wrapper">
+                            <table class="alarm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Camera</th>
+                                        <th>Location</th>
+                                        <th>Total</th>
+                                        <th>Critical</th>
+                                        <th>Warning</th>
+                                        <th>Avg Prob</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rpt-camera-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Export panel -->
+                    <div class="panel report-export-panel">
+                        <div class="panel-header">
+                            <h3> Export Report</h3>
+                        </div>
+                        <div class="export-buttons">
+                            <button class="export-btn export-csv" id="btn-export-csv">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="16" y1="13" x2="8" y2="13" />
+                                    <line x1="16" y1="17" x2="8" y2="17" />
+                                </svg>
+                                Download CSV
+                            </button>
+                            <button class="export-btn export-pdf" id="btn-export-pdf">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <path d="M9 15v-4M12 15v-6M15 15v-2" />
+                                </svg>
+                                Download PDF
+                            </button>
+                            <button class="export-btn export-print" id="btn-print-report">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="6 9 6 2 18 2 18 9" />
+                                    <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                                    <rect x="6" y="14" width="12" height="8" />
+                                </svg>
+                                Print Report
+                            </button>
+                        </div>
+                        <div class="report-meta" id="rpt-meta-text"></div>
+                    </div>
+                </div>
+
+                <!-- Incident Log -->
+                <div class="panel" id="rpt-incidents-panel" style="display:none">
+                    <div class="panel-header">
+                        <h3> Incident Log</h3>
+                        <span class="stat-label" id="rpt-incident-count"></span>
+                    </div>
+                    <div class="alarm-table-wrapper">
+                        <table class="alarm-table">
+                            <thead>
+                                <tr>
+                                    <th>Time (UTC)</th>
+                                    <th>Camera</th>
+                                    <th>Location</th>
+                                    <th>Label</th>
+                                    <th>Severity</th>
+                                    <th>Probability</th>
+                                    <th>State</th>
+                                    <th>Guards Notified</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rpt-incidents-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+            <!--   LIVE ALERTS   -->
+            <section id="alerts-section" class="content-section">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3> Real-Time Alert Feed</h3>
+                        <div class="filters">
+                            <select id="filter-risk">
+                                <option value="">All Risks</option>
+                                <option value="0">Safe (0)</option>
+                                <option value="1">Alert (1)</option>
+                            </select>
+                            <button class="btn-sm" id="btn-clear-alerts">Clear</button>
+                        </div>
+                    </div>
+                    <div id="live-alerts-list" class="alerts-list alerts-list-tall"></div>
+                </div>
+            </section>
+
+            <!--   LIVE STREAM   -->
+            <section id="live-stream-section" class="content-section">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>📹 Secure Live Stream</h3>
+                        <div class="filters">
+                            <input type="text" id="stream-camera-id" placeholder="Camera ID (e.g. CAM_01)" value="CAM_01">
+                            <button class="btn-primary btn-sm" id="btn-connect-stream">Connect</button>
+                            <button class="btn-sm" id="btn-disconnect-stream" style="display:none;">Disconnect</button>
+                        </div>
+                    </div>
+                    <div class="stream-container" style="display: flex; justify-content: center; align-items: center; background: #000; min-height: 480px; border-radius: 8px; margin-top: 15px; position: relative; overflow: hidden;">
+                        <span id="stream-status" style="color: #666; font-family: monospace;">Disconnected</span>
+                        <img id="live-stream-img" style="display:none; position: absolute; width: 100%; height: 100%; object-fit: contain;" alt="Live Feed" />
+                    </div>
+                    <p style="margin-top: 10px; font-size: 0.85em; color: var(--text-muted);"><span class="security-badge">E2E Encrypted</span> Frames are blurred by PrivacyEngine and AES-encrypted in transit.</p>
+                </div>
+            </section>
+
+            <!--   RECORDINGS   -->
+            <section id="recordings-section" class="content-section">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>🔐 Encrypted Recordings</h3>
+                        <div class="filters">
+                            <input type="password" id="recordings-master-key" placeholder="Master Decryption Key">
+                            <button class="btn-primary btn-sm" id="btn-unlock-recordings">Unlock</button>
+                        </div>
+                    </div>
+                    <p style="margin-bottom: 15px; font-size: 0.9em; color: var(--text-muted);">
+                        Recordings are AES-256 encrypted on disk. Enter the master key to decrypt them in memory for playback. 
+                    </p>
+                    
+                    <div class="alarm-table-wrapper" id="recordings-table-container">
+                        <table class="alarm-table">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Date Created</th>
+                                    <th>Size (bytes)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordings-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Video Player Modal / Area -->
+                    <div id="recordings-player-container" style="display: none; margin-top: 20px;">
+                        <div class="panel-header" style="border-top: 1px solid var(--border); padding-top: 15px;">
+                            <h4 id="recordings-player-title">Playback</h4>
+                            <button class="btn-sm" id="btn-close-player">Close</button>
+                        </div>
+                        <video id="recordings-video-player" controls muted playsinline style="width: 100%; border-radius: 8px; background: #000; margin-top: 10px; max-height: 500px;"></video>
+                    </div>
+                </div>
+            </section>
+            <!--   REPORTS   -->
+            <section id="reports-section" class="content-section">
+                <div class="cards-grid cards-grid-2">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Event Distribution</h3>
+                        </div>
+                        <div class="chart-container chart-sm">
+                            <canvas id="reports-pie-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Camera Activity</h3>
+                        </div>
+                        <div class="chart-container chart-sm">
+                            <canvas id="reports-camera-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Detection Timeline</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="reports-timeline-chart"></canvas>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Summary Statistics</h3>
+                    </div>
+                    <div class="stats-table" id="summary-stats"></div>
+                </div>
+            </section>
+
+            <!--   SYSTEM STATUS   -->
+            <section id="system-section" class="content-section">
+                <div class="cards-grid cards-grid-2">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>System Overview</h3>
+                        </div>
+                        <div class="detail-list" id="system-details"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Database Files</h3>
+                        </div>
+                        <div class="detail-list" id="db-details"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!--   GUARDIANCE (Model Protection)   -->
+            <section id="guardiance-section" class="content-section">
+                <div class="cards-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-blue">🛡️</div>
+                        <div class="stat-info">
+                            <p class="stat-label">Audit Events</p>
+                            <h3 class="stat-value" id="guard-total-events">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-red"></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Auth Failures</p>
+                            <h3 class="stat-value" id="guard-auth-fails">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-purple"></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Blocked Frames</p>
+                            <h3 class="stat-value" id="guard-blocked-frames">—</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-green"></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Anomalies</p>
+                            <h3 class="stat-value" id="guard-anomalies">—</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3> Live Audit Log Feed</h3>
+                    </div>
+                    <div id="guard-audit-list" class="alerts-list alerts-list-tall"
+                        style="background:#111827; border-radius:0.5rem; padding:1rem; font-family:monospace; color:#10b981;">
+                    </div>
+                </div>
+            </section>
+
+            <!--   SECURITY   -->
+            <section id="security-section" class="content-section">
+                <div class="cards-grid cards-grid-2">
+                    <div class="security-card">
+                        <div class="sec-icon"></div>
+                        <h4>Transport Encryption</h4>
+                        <div class="sec-details" id="sec-transport"></div>
+                    </div>
+                    <div class="security-card">
+                        <div class="sec-icon"></div>
+                        <h4>Digital Signatures</h4>
+                        <div class="sec-details" id="sec-signatures"></div>
+                    </div>
+                    <div class="security-card">
+                        <div class="sec-icon"></div>
+                        <h4>Data Integrity</h4>
+                        <div class="sec-details" id="sec-integrity"></div>
+                    </div>
+                    <div class="security-card">
+                        <div class="sec-icon"></div>
+                        <h4>Access Control (RBAC)</h4>
+                        <div class="sec-details" id="sec-rbac"></div>
+                    </div>
+                    <div class="security-card full-width">
+                        <div class="sec-icon"> </div>
+                        <h4>Encryption Layer</h4>
+                        <div class="sec-details" id="sec-encryption"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,76 @@
+[
+  {
+    "id": "rule-security-critical",
+    "name": "Critical Security Threat",
+    "enabled": true,
+    "label_triggers": [
+      "SECURITY:BRUTE_FORCE_DETECTED",
+      "SECURITY:PRIVILEGE_ESCALATION_DETECTED",
+      "SECURITY:INTEGRITY_FAILURE"
+    ],
+    "min_probability": 0.85,
+    "cooldown_seconds": 30,
+    "severity": "CRITICAL",
+    "cameras": [],
+    "notify_sms": true,
+    "notify_email": false,
+    "description": "Fires when ModelProtection detects a brute-force attack, privilege escalation, or model integrity failure."
+  },
+  {
+    "name": "somthing wrong happens",
+    "severity": "WARNING",
+    "min_probability": 0.85,
+    "cooldown_seconds": 20,
+    "label_triggers": [
+      "PRE-VIOLENCE"
+    ],
+    "notify_sms": true,
+    "notify_email": true,
+    "enabled": true,
+    "id": "rule-af3fddb8"
+  },
+  {
+    "name": "fighting",
+    "severity": "CRITICAL",
+    "min_probability": 0.85,
+    "cooldown_seconds": 20,
+    "label_triggers": [
+      "VIOLENCE"
+    ],
+    "notify_sms": true,
+    "notify_email": true,
+    "enabled": true,
+    "id": "rule-a385cb6f"
+  },
+  {
+    "name": "BE READY",
+    "severity": "WARNING",
+    "min_probability": 0.85,
+    "cooldown_seconds": 20,
+    "label_triggers": [
+      "PRE-VIOLENCE"
+    ],
+    "notify_sms": true,
+    "notify_email": true,
+    "enabled": true,
+    "id": "rule-3cbe71d6"
+  },
+  {
+    "id": "rule-security-warning",
+    "name": "Security Warning",
+    "enabled": true,
+    "label_triggers": [
+      "SECURITY:RAPID_ACCESS_DETECTED",
+      "SECURITY:COMM_ERROR",
+      "SECURITY:ANOMALY_DETECTED",
+      "SECURITY:SUSTAINED_ANOMALY_RATE"
+    ],
+    "min_probability": 0.85,
+    "cooldown_seconds": 20,
+    "severity": "WARNING",
+    "cameras": [],
+    "notify_sms": false,
+    "notify_email": true,
+    "description": "Fires when ModelProtection detects warnings such as rapid access, communication errors, or anomalies."
+  }
+]
