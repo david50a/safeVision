@@ -44,7 +44,6 @@ model/*.onnx.enc
 model/*.task
 model/onnxruntime_sdk/
 model/onnxruntime_sdk.zip
-server/model/dataset
 server/model/
 
 # IDEs
