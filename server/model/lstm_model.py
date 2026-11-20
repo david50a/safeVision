@@ -51,7 +51,7 @@ import torch.nn.functional as F
 import numpy as np
 import math
 import mediapipe as mp
-from . import vision as vs
+import vision as vs
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.core.base_options import BaseOptions
 import cv2
