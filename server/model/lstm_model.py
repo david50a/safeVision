@@ -3,6 +3,7 @@ lstm_model_v15.py — SafeVision v15
                                        
 Major architectural overhaul from v14 addressing key limitations:
 
+
 IMPROVEMENT 1 — Bidirectional Multi-Layer LSTM with Working Dropout
     v14 had num_lstm_layers=1 which meant dropout was silently ignored by PyTorch.
     v15 uses 2+ bidirectional LSTM layers with actual dropout between layers.
